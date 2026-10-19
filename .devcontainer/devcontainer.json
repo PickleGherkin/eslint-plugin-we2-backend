@@ -1,0 +1,35 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+// README at: https://github.com/devcontainers/templates/tree/main/src/typescript-node
+{
+	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
+	"image": "mcr.microsoft.com/vscode/devcontainers/typescript-node",
+	"updateContentCommand": "sudo apt update && sudo apt install -y ripgrep",
+	"mounts": [
+		{
+			"source": "${localEnv:HOME}/.ssh",
+			"target": "/home/node/.ssh",
+			"type": "bind"
+		}
+	],
+	"customizations": {
+		"settings": {
+			"todo-tree.general.ripgrep": "/usr/bin/rg"
+		},
+		"vscode": {
+			"extensions": [
+				"gruntfuggly.todo-tree",
+				"dbaeumer.vscode-eslint",
+				"donjayamanne.githistory",
+				"firefox-devtools.vscode-firefox-debug",
+				"humao.rest-client",
+				"mikestead.dotenv",
+				"ms-vscode-remote.remote-containers",
+				"ms-vscode.extension-test-runner",
+				"ms-vscode.live-server",
+				"orta.vscode-jest",
+				"usernamehw.errorlens",
+				"pkief.material-icon-theme"
+			]
+		}
+	}
+}

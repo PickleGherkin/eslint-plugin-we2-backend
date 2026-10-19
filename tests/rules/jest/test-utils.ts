@@ -1,0 +1,153 @@
+import { createRequire } from 'module';
+import path from 'path';
+import { jest } from '@jest/globals';
+import { TSESLint } from '@typescript-eslint/utils';
+import { version as eslintVersion } from 'eslint/package.json';
+import * as semver from 'semver';
+
+const nodeRequire = createRequire(__filename);
+const eslintRequire = createRequire(nodeRequire.resolve('eslint'));
+
+export const espreeParser = eslintRequire.resolve('espree');
+
+export const usingFlatConfig = semver.major(eslintVersion) >= 9;
+
+export class FlatCompatRuleTester extends TSESLint.RuleTester {
+  public constructor(testerConfig?: TSESLint.RuleTesterConfig) {
+    super(FlatCompatRuleTester._flatCompat(testerConfig));
+  }
+
+  public override run<
+    TMessageIds extends string,
+    TOptions extends readonly unknown[],
+  >(
+    ruleName: string,
+    rule: TSESLint.RuleModule<TMessageIds, TOptions>,
+    tests: TSESLint.RunTests<TMessageIds, TOptions>,
+  ) {
+    super.run(ruleName, rule, {
+      valid: tests.valid.map(t => FlatCompatRuleTester._flatCompat(t)),
+      invalid: tests.invalid.map(t => FlatCompatRuleTester._flatCompat(t)),
+    });
+  }
+
+  /* istanbul ignore next */
+  private static _flatCompat<
+    T extends
+      | undefined
+      | TSESLint.RuleTesterConfig
+      | string
+      | TSESLint.ValidTestCase<unknown[]>
+      | TSESLint.InvalidTestCase<string, unknown[]>,
+  >(config: T): T {
+    if (!config || !usingFlatConfig || typeof config === 'string') {
+      return config;
+    }
+
+    const obj: TSESLint.FlatConfig.Config & {
+      languageOptions: TSESLint.FlatConfig.LanguageOptions & {
+        parserOptions: TSESLint.FlatConfig.ParserOptions;
+      };
+    } = {
+      languageOptions: { parserOptions: {} },
+    };
+
+    for (const [key, value] of Object.entries(config)) {
+      if (key === 'parser') {
+        obj.languageOptions.parser = nodeRequire(value);
+
+        continue;
+      }
+
+      if (key === 'parserOptions') {
+        for (const [option, val] of Object.entries(value)) {
+          if (option === 'ecmaVersion' || option === 'sourceType') {
+            // @ts-expect-error: TS thinks the value could the opposite type of whatever option is
+            obj.languageOptions[option] =
+              val as TSESLint.FlatConfig.LanguageOptions[
+                | 'ecmaVersion'
+                | 'sourceType'];
+
+            continue;
+          }
+
+          obj.languageOptions.parserOptions[option] = val;
+        }
+
+        continue;
+      }
+
+      obj[key as keyof typeof obj] = value;
+    }
+
+    return obj as unknown as T;
+  }
+}
+
+export const getFixturesRootDir = () => path.join(__dirname, 'fixtures');
+
+/**
+ * Creates a function for requiring a rule which requires an optional dependency,
+ * which allows having that require throw to aid in testing it is truly optional.
+ *
+ * Also included is a function for setting the fixture filename for tests
+ *
+ * @todo this is a bit sloppy, see if we can clean it up after ESLint v10 & co
+ */
+export const createRuleRequirerTester = <
+  TOptions extends readonly unknown[],
+  TMessageIds extends string,
+>(
+  rulePath: string,
+  depName: string,
+  fixtureFilename: string,
+) => {
+  const TSESLintPluginRef: { throwWhenRequiring: boolean } = {
+    throwWhenRequiring: false,
+  };
+
+  jest.doMock(depName, () => {
+    if (TSESLintPluginRef.throwWhenRequiring) {
+      throw new (class extends Error {
+        public code;
+
+        constructor(message?: string) {
+          super(message);
+          this.code = 'MODULE_NOT_FOUND';
+        }
+      })();
+    }
+
+    return jest.requireActual(depName);
+  });
+
+  const withFixtureFilename = <
+    T extends Array<
+      | (TSESLint.ValidTestCase<TOptions> | string)
+      | TSESLint.InvalidTestCase<TMessageIds, TOptions>
+    >,
+  >(
+    cases: T,
+  ): T extends Array<TSESLint.InvalidTestCase<TMessageIds, TOptions>>
+    ? Array<TSESLint.InvalidTestCase<TMessageIds, TOptions>>
+    : Array<TSESLint.ValidTestCase<TOptions>> => {
+    // @ts-expect-error this is fine, and will go away later once we upgrade
+    return cases.map(code => {
+      const test = typeof code === 'string' ? { code } : code;
+
+      return { filename: fixtureFilename, ...test };
+    });
+  };
+
+  return {
+    TSESLintPluginRef,
+    requireRule(throwWhenRequiring: boolean) {
+      jest.resetModules();
+
+      TSESLintPluginRef.throwWhenRequiring = throwWhenRequiring;
+
+      return nodeRequire(rulePath).default;
+    },
+    withFixtureFilename,
+  };
+};

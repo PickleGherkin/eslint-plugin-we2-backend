@@ -1,0 +1,85 @@
+{
+    "name": "eslint-plugin-we2-backend",
+    "version": "1.0.0",
+    "description": "An ESLint plugin tailor-made for educational purposes for students at the Berliner Hochschule für Technik.",
+    "main": "dist/plugin.mjs",
+    "scripts": {
+        "build": "rimraf dist; npm run _compile_copyfiles",
+        "_compile": "tsdown",
+        "_compile.watch": "tsdown --watch",
+        "_copyfiles": "copyfiles --up 1 \"./src/**/*.!(mts|ts)\" dist",
+        "_compile_and_copyfiles": "npm-run-all -c _compile _copyfiles",
+        "test": "jest --coverage",
+        "lint": "eslint src/ tests/",
+        "clean": "rimraf dist coverage",
+        "clean:hard": "rimraf dist coverage node_modules package-lock.json"
+    },
+    "tsdown": {
+        "entry": [
+            "src/plugin.ts",
+            "src/rules/**/*.ts"
+        ],
+        "format": "esm",
+        "dts": true,
+        "clean": true,
+        "deps.neverBundle": [
+            "eslint",
+            "typescript",
+            "typescript-eslint",
+            "@typescript-eslint/utils",
+            "eslint-plugin-jest"
+        ]
+    },
+    "exports": {
+        ".": {
+            "import": "./dist/plugin.mjs",
+            "types": "./dist/plugin.d.mts"
+        }
+    },
+    "files": [
+        "dist"
+    ],
+    "author": "Gökhan Selcuk",
+    "license": "GPL-3.0-only",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/PickleGherkin/eslint-plugin-we2-backend.git"
+    },
+    "bugs": {
+        "url": "https://github.com/PickleGherkin/eslint-plugin-we2-backend/issues"
+    },
+    "homepage": "https://github.com/PickleGherkin/eslint-plugin-we2-backend#readme",
+    "type": "module",
+    "devDependencies": {
+        "@eslint/js": "^10.0.1",
+        "@types/eslint": "^9.6.1",
+        "@types/express": "^5.0.6",
+        "@types/jest": "^30.0.0",
+        "@types/node": "^25.9.9",
+        "@types/semver": "^7.8.0",
+        "@typescript-eslint/parser": "^8.60.0",
+        "@typescript-eslint/rule-tester": "^8.71.2",
+        "@typescript-eslint/utils": "^8.60.1",
+        "copyfiles": "^2.4.1",
+        "eslint": "^10.12.0",
+        "eslint-plugin-eslint-plugin": "^7.6.2",
+        "eslint-plugin-jest": "^29.17.0",
+        "eslint-plugin-n": "^18.4.1",
+        "globals": "^17.13.0",
+        "jest": "^30.5.2",
+        "jest-junit": "^17.0.0",
+        "npm-run-all": "^4.1.5",
+        "rimraf": "^6.1.3",
+        "ts-jest": "^29.4.14",
+        "ts-node": "^10.9.2",
+        "tsdown": "^0.22.14",
+        "typescript": "^6.0.3",
+        "typescript-eslint": "^8.71.2"
+    },
+    "peerDependencies": {
+        "@typescript-eslint/eslint-plugin": "*",
+        "eslint": "^10.x",
+        "jest": "*",
+        "typescript": "*"
+    }
+}

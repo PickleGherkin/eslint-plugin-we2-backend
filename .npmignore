@@ -1,0 +1,35 @@
+# Ignore source code since we only publish compiled output
+src/
+
+# Ignore test files
+test/
+tests/
+__tests__/
+coverage/
+jest.config.js
+jest.config.ts
+vitest.config.js
+vitest.config.ts
+
+# Ignore TypeScript configs
+tsconfig.json
+tsconfig.base.json
+
+# Ignore build logs and local env files
+*.log
+.env
+.env.*
+
+# Ignore typical dev files
+.devcontainer/
+.vscode/
+.gitignore
+eslint.config.mjs
+eslint.config.mts
+eslint.config.js
+eslint.config.ts
+scripts/
+.github/*
+
+# Ignore package manager lock files
+package-lock.json
