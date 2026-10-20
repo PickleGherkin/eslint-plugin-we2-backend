@@ -79,14 +79,14 @@ export default createRule({
   name: 'prefer-to-be',
   meta: {
     docs: {
-      description: 'Suggest using `toBe()` for primitive literals',
+      description: 'Empfiehlt `toBe()` für primitive Werte und die passenden spezialisierten Matcher.',
     },
     messages: {
-      useToBe: 'Use `toBe` when expecting primitive literals',
-      useToBeUndefined: 'Use `toBeUndefined` instead',
-      useToBeDefined: 'Use `toBeDefined` instead',
-      useToBeNull: 'Use `toBeNull` instead',
-      useToBeNaN: 'Use `toBeNaN` instead',
+      useToBe: 'Nutze lieber `toBe` wenn du ein primitiven Wert erwartest.',
+      useToBeUndefined: 'Nutze lieber `toBeUndefined`.',
+      useToBeDefined: 'Nutze lieber `toBeDefined`.',
+      useToBeNull: 'Nutze lieber `toBeNull`.',
+      useToBeNaN: 'Nutze lieber `toBeNaN`.',
     },
     fixable: 'code',
     type: 'suggestion',

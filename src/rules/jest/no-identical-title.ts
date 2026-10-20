@@ -15,7 +15,7 @@ export default createRule({
   name: 'no-identical-title',
   meta: {
     docs: {
-      description: 'Disallow identical titles',
+      description: 'Verhindert identische Titel in derselben Jest-Test- oder Describe-Ebene.',
     },
     messages: {
       multipleTestTitle:

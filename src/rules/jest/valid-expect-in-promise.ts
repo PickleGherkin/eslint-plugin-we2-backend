@@ -330,11 +330,11 @@ export default createRule({
   meta: {
     docs: {
       description:
-        'Require promises that have expectations in their chain to be valid',
+        'Stellt sicher, dass Promise-Ketten mit `expect` zurückgegeben oder abgewartet werden.',
     },
     messages: {
       expectInFloatingPromise:
-        'This promise should either be returned or awaited to ensure the expects in its chain are called',
+        'Dieses Promise sollte entweder returned oder awaited werden um sicherzugehen, dass das `expect` in der Chain von Jest aufgerufen wird.',
     },
     type: 'suggestion',
     schema: [],

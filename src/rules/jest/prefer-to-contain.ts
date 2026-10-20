@@ -27,10 +27,10 @@ export default createRule({
   name: 'prefer-to-contain',
   meta: {
     docs: {
-      description: 'Suggest using `toContain()`',
+      description: 'Empfiehlt toContain() für Prüfungen, ob ein Array oder eine Zeichenkette einen Wert enthält.',
     },
     messages: {
-      useToContain: 'Use toContain() instead',
+      useToContain: 'Nutze lieber toContain().',
     },
     fixable: 'code',
     type: 'suggestion',

@@ -6,7 +6,7 @@ export default createRule({
   name: 'no-export',
   meta: {
     docs: {
-      description: 'Disallow using `exports` in files containing tests',
+      description: 'Verhindert Exporte aus Dateien, die Jest-Tests enthalten.',
     },
     messages: {
       unexpectedExport: "Bitte exportiere keine Funktionen oder Variablen aus deinen Testdateien. Das Problem ist, dass beim Importieren von Testdateien die Tests erneut von Jest registriert werden und dadurch inkonsistente Ergebnisse entstehen können. Wenn du Helfer-Funktionen innerhalb deiner Testdateien verwenden möchtest, solltest du diese in eine eigenständige TS-Dateien implementieren, wie bspw. 'userHelper.ts'."

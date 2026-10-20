@@ -117,19 +117,27 @@ export default createRule<[Options], MessageIds>({
   name: 'valid-title',
   meta: {
     docs: {
-      description: 'Enforce valid titles',
+      description: 'Stellt sicher, dass Titel von describe, test und it aussagekräftig und gültig sind.',
     },
     messages: {
-      titleMustBeString: 'Title must be a string',
-      emptyTitle: '{{ jestFunctionName }} should not have an empty title',
-      duplicatePrefix: 'should not have duplicate prefix',
-      accidentalSpace: 'should not have leading or trailing spaces',
-      disallowedWord: '"{{ word }}" is not allowed in test titles',
-      mustNotMatch: '{{ jestFunctionName }} should not match {{ pattern }}',
-      mustMatch: '{{ jestFunctionName }} should match {{ pattern }}',
+      titleMustBeString:
+        'Der Titel muss eine Zeichenkette sein, damit Jest ihn in den Testergebnissen anzeigen kann.',
+      emptyTitle:
+        '{{ jestFunctionName }} benötigt einen aussagekräftigen, nicht leeren Titel.',
+      duplicatePrefix:
+        'Der Titel enthält ein doppeltes Präfix. Vermeide es `test`, `it` oder `describe` im Titel anzugeben.',
+      accidentalSpace:
+        'Der Titel darf nicht mit Leerzeichen beginnen oder enden. Entferne die versehentlichen Leerzeichen.',
+      disallowedWord:
+        '"{{ word }}" ist in Testtiteln nicht erlaubt. Formuliere den Titel ohne dieses Wort.',
+      mustNotMatch:
+        'Der Titel von {{ jestFunctionName }} darf nicht auf das Muster {{ pattern }} passen. Formuliere ihn entsprechend um.',
+      mustMatch:
+        'Der Titel von {{ jestFunctionName }} muss auf das Muster {{ pattern }} passen. Passe den Titel entsprechend an.',
       mustNotMatchCustom: '{{ message }}',
       mustMatchCustom: '{{ message }}',
-      invalidEachSpecifier: '"{{ specifier }}" is not a valid format specifier',
+      invalidEachSpecifier:
+        '"{{ specifier }}" ist kein gültiger Formatbezeichner für `each`. Verwende einen unterstützten Bezeichner.',
     },
     type: 'suggestion',
     schema: [

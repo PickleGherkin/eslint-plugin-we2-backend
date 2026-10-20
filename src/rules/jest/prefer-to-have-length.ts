@@ -6,10 +6,10 @@ export default createRule({
   name: 'prefer-to-have-length',
   meta: {
     docs: {
-      description: 'Suggest using `toHaveLength()`',
+      description: 'Empfiehlt `toHaveLength()` für Längenprüfungen.',
     },
     messages: {
-      useToHaveLength: 'Use toHaveLength() instead',
+      useToHaveLength: 'Nutze lieber toHaveLength().',
     },
     fixable: 'code',
     type: 'suggestion',

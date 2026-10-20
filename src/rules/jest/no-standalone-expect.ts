@@ -42,10 +42,10 @@ export default createRule<
   name: 'no-standalone-expect',
   meta: {
     docs: {
-      description: 'Disallow using `expect` outside of `it` or `test` blocks',
+      description: 'Verhindert `expect` außerhalb eines Jest-Testblocks.',
     },
     messages: {
-      unexpectedExpect: 'Expect must be inside of a test block',
+      unexpectedExpect: 'Expect muss innerhalb eines `test`-Blocks sein.',
     },
     type: 'suggestion',
     schema: [
