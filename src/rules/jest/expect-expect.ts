@@ -47,7 +47,7 @@ export default createRule<
   name: 'expect-expect',
   meta: {
     docs: {
-      description: 'Enforce assertion to be made in a test body',
+      description: 'Stellt sicher, dass jeder Jest-Test mindestens eine Assertion enthält.',
     },
     messages: {
       noAssertions: "In jedem Testcase muss mindestens EIN 'expect' Aufruf erfolgen. Ansonsten erfüllt der Test keinerlei Funktion und wird als positiv von Jest bewertet."

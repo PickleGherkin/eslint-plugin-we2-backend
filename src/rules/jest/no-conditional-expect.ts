@@ -12,10 +12,10 @@ export default createRule({
   name: 'no-conditional-expect',
   meta: {
     docs: {
-      description: 'Disallow calling `expect` conditionally',
+      description: 'Verhindert expect-Aufrufe innerhalb bedingter Ausdrücke oder eines catch-Blocks.',
     },
     messages: {
-      conditionalExpect: 'Avoid calling `expect` conditionally`',
+      conditionalExpect: 'Vermeide es `expect` in Konditionen zu verwenden. Versuche `expects` so aufzustellen, dass sie von oben nach unten ohne Abzweigungen verlaufen. Schau dir zur Hilfe die Beispiel in der Regeldokumentation an.`',
     },
     type: 'problem',
     schema: [],

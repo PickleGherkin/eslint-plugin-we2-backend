@@ -5,10 +5,10 @@ export default createRule({
   name: 'no-alias-methods',
   meta: {
     docs: {
-      description: 'Disallow alias methods',
+      description: 'Verlangt die kanonischen Namen für Jest-Matcher anstelle ihrer Alias-Methoden.',
     },
     messages: {
-      replaceAlias: `Replace {{ alias }}() with its canonical name of {{ canonical }}()`,
+      replaceAlias: `Verwende statt '{{ alias }}()' lieber die kanonische Methode '{{ canonical }}()'. Dadurch halten sich die Tests nach aktuellen Anweisungen der Jest-Dokumentationen und lassen sich besser nachvollziehen.`,
     },
     fixable: 'code',
     type: 'suggestion',
