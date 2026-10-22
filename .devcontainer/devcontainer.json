@@ -26,8 +26,8 @@
 				"ms-vscode-remote.remote-containers",
 				"ms-vscode.extension-test-runner",
 				"ms-vscode.live-server",
-				"orta.vscode-jest",
 				"usernamehw.errorlens",
+				"vitest.explorer",
 				"pkief.material-icon-theme"
 			]
 		}

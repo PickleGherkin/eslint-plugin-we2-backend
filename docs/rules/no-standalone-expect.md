@@ -1,6 +1,6 @@
 # `no-standalone-expect`
 
-Verhindert `expect` außerhalb eines Jest-Testblocks.
+Verhindert `expect` außerhalb eines Vitest-Testblocks.
 
 ## Regel Details
 

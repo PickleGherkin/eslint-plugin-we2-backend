@@ -90,7 +90,7 @@ export default [
     {
         ...
         rules: {
-            'we2b/jest/await-supertest-request': ['error', {
+            'we2b/supertest/await-supertest-request': ['error', {
                 allowCallbackStyle: true,
                 allowReturn: false,
             }],
@@ -151,7 +151,7 @@ test('liefert alle Nutzer', (done) => {
 
 Standard: `false`
 
-Wenn aktiviert, darf die Anfrage zurückgegeben statt abgewartet werden. Jest wartet dann auf das zurückgegebene Promise.
+Wenn aktiviert, darf die Anfrage zurückgegeben statt abgewartet werden. Vitest wartet dann auf das zurückgegebene Promise.
 
 Standardmäßig ist das aus, weil die Regel verlangt, dass die Anfrage *direkt* abgewartet wird. Ein `return` sorgt außerdem dafür, dass nach der Anfrage nichts mehr ausgeführt wird.
 

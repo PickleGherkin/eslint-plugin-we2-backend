@@ -28,7 +28,7 @@ test('Create User - Invalid User', async () => {
     try {
         await createUser("Some invalid user");  // <= Wenn hier kein Fehler geworfen wird,
                                                 // wird der Test trotzdem als postiv ausgewertet!
-                                                // Der Catch-Block wird nie erreicht und Jest bewertet
+                                                // Der Catch-Block wird nie erreicht und Vitest bewertet
                                                 // jeden Test (ohne vorhandenes 'expect') standardmäßig
                                                 // als positiv.
     } catch (error) {
@@ -43,7 +43,7 @@ test('Create User - Invalid User', async () => {
 
 ```javascript
 test('Get User', () => {
-    expect(user).toBeDefined(); // <= Wir nutzen vorher Jest-Matcher um festzustellen ob der User überhaupt existiert.
+    expect(user).toBeDefined(); // <= Wir nutzen vorher Vitest-Matcher um festzustellen ob der User überhaupt existiert.
     expect(user.name).toBe('Ada');  // <= Jetzt wissen wir, dass der User existiert und können die Felder testen.
                                     // Hinweis: Wenn TypeScript hier meckert kann man den
                                     // sogenannten 'non-null assertion operator' (user!.name) verwenden.
@@ -51,7 +51,7 @@ test('Get User', () => {
 
 // Promise-Ergebnisse testen
 test('Create User - Invalid User', async () => {
-    await expect(createUser("Some invalid user")).rejects.toThrow(); // <= Ist das nicht schön? Wir nutzen Jest-Matcher
+    await expect(createUser("Some invalid user")).rejects.toThrow(); // <= Ist das nicht schön? Wir nutzen Vitest-Matcher
                                                                 // um Promises aufzulösen ('.rejects' oder '.resolves')
 });
 ```

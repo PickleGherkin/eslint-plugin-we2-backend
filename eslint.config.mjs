@@ -21,7 +21,7 @@ export default defineConfig([
     files: ["**/*.{js,mjs,ts,tsx}"],
     languageOptions: {
       globals: {
-        ...globals.jest,
+        ...globals.vitest,
       },
     },
     rules: {

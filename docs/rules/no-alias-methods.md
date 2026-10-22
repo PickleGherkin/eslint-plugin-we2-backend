@@ -1,6 +1,6 @@
 # `no-alias-methods`
 
-Verlangt die kanonischen Namen für Jest-Matcher anstelle ihrer Alias-Methoden.
+Verlangt die kanonischen Namen für Vitest-Matcher anstelle ihrer Alias-Methoden.
 
 ## Regel Details
 
@@ -8,7 +8,7 @@ Unter anderem werden `toBeCalled`, `toReturn` und `toThrowError` auf die bevorzu
 
 ## Warum ist diese Regel wichtig?
 
-Kanonische Matcher-Namen sind einheitlicher und entsprechen der aktuellen Jest-Dokumentation. Dadurch werden Tests leichter lesbar und Alias-Varianten nicht versehentlich in neuen Tests weiterverwendet.
+Kanonische Matcher-Namen sind einheitlicher und entsprechen der aktuellen Vitest-Dokumentation. Dadurch werden Tests leichter lesbar und Alias-Varianten nicht versehentlich in neuen Tests weiterverwendet.
 
 ## Beispiele
 

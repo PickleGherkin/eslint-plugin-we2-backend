@@ -1,10 +1,10 @@
 # `no-export`
 
-Verhindert Exporte aus Dateien, die Jest-Tests enthalten.
+Verhindert Exporte aus Dateien, die Vitest-Tests enthalten.
 
 ## Warum ist diese Regel wichtig?
 
-Wenn eine Testdatei importiert wird, kann Jest deren Tests erneut registrieren. Exporte aus solchen Dateien fördern deshalb unübersichtliche Abhängigkeiten und können zu doppelten Testregistrierungen oder unvorhersehbaren Ergebnissen führen.
+Wenn eine Testdatei importiert wird, kann Vitest deren Tests erneut registrieren. Exporte aus solchen Dateien fördern deshalb unübersichtliche Abhängigkeiten und können zu doppelten Testregistrierungen oder unvorhersehbaren Ergebnissen führen.
 
 ## Beispiele
 

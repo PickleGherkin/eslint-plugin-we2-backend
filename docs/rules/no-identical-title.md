@@ -1,10 +1,10 @@
 # `no-identical-title`
 
-Verhindert identische Titel in derselben Jest-Test- oder Describe-Ebene.
+Verhindert identische Titel in derselben Vitest-Test- oder Describe-Ebene.
 
 ## Warum ist diese Regel wichtig?
 
-Jest zeigt Testtitel in Fehlermeldungen und Ergebnissen an. Gleiche Titel erschweren die Zuordnung eines Fehlers und können bei komplexen Teststrukturen zu unklaren Ergebnissen führen.
+Vitest zeigt Testtitel in Fehlermeldungen und Ergebnissen an. Gleiche Titel erschweren die Zuordnung eines Fehlers und können bei komplexen Teststrukturen zu unklaren Ergebnissen führen.
 
 ## Beispiele
 

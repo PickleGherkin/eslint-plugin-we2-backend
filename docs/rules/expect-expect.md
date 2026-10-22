@@ -1,6 +1,6 @@
 # `expect-expect`
 
-Stellt sicher, dass jeder Jest-Test mindestens eine Assertion enthält.
+Stellt sicher, dass jeder Vitest-Test mindestens eine Assertion enthält.
 
 ## Regel Details
 

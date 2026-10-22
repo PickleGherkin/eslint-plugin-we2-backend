@@ -8,7 +8,7 @@
         "_compile": "tsdown",
         "_compile.watch": "tsdown --watch",
         "_copyfiles": "copyfiles --up 1 \"./src/**/*.!(mts|ts)\" dist",
-        "_compile_and_copyfiles": "npm-run-all -c _compile _copyfiles",
+        "_compile_copyfiles": "npm-run-all -c _compile _copyfiles",
         "test": "vitest run --coverage",
         "lint": "eslint src/ tests/",
         "clean": "rimraf dist coverage",

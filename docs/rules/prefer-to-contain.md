@@ -4,7 +4,7 @@ Empfiehlt `toContain()` für Prüfungen, ob ein Array oder eine Zeichenkette ein
 
 ## Warum ist diese Regel wichtig?
 
-`expect(array.includes(value)).toBe(true)` beschreibt die Absicht indirekt. `toContain` ist in Jest dafür vorgesehen und macht die Assertion kompakter und lesbarer.
+`expect(array.includes(value)).toBe(true)` beschreibt die Absicht indirekt. `toContain` ist in Vitest dafür vorgesehen und macht die Assertion kompakter und lesbarer.
 
 ## Beispiele
 
