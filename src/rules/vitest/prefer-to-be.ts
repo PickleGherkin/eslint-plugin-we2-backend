@@ -97,16 +97,17 @@ export default createRule<[], MessageId>({
   meta: {
     type: 'suggestion',
     docs: {
-      description: 'enforce using toBe()',
+      description:
+        'Empfiehlt `toBe()` für primitive Werte und die passenden spezialisierten Matcher.',
     },
     schema: [],
     fixable: 'code',
     messages: {
-      useToBe: 'Use `toBe` instead',
-      useToBeUndefined: 'Use `toBeUndefined()` instead',
-      useToBeDefined: 'Use `toBeDefined()` instead',
-      useToBeNull: 'Use `toBeNull()` instead',
-      useToBeNaN: 'Use `toBeNaN()` instead',
+      useToBe: 'Nutze lieber `toBe` wenn du ein primitiven Wert erwartest.',
+      useToBeUndefined: 'Nutze lieber `toBeUndefined`.',
+      useToBeDefined: 'Nutze lieber `toBeDefined`.',
+      useToBeNull: 'Nutze lieber `toBeNull`.',
+      useToBeNaN: 'Nutze lieber `toBeNaN`.',
     },
   },
   create(context) {

@@ -16,11 +16,11 @@ export default createRule<Options, MESSAGE_IDS>({
   meta: {
     type: 'suggestion',
     docs: {
-      description: 'enforce using toHaveLength()',
+      description: 'Empfiehlt `toHaveLength()` für Längenprüfungen.',
     },
     fixable: 'code',
     messages: {
-      preferToHaveLength: 'Prefer toHaveLength()',
+      preferToHaveLength: 'Nutze lieber toHaveLength().',
     },
     schema: [],
   },

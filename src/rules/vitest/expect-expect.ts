@@ -21,8 +21,9 @@ export default createRule<Options, MESSAGE_ID>({
   meta: {
     type: 'suggestion',
     docs: {
-      description: 'enforce having expectation in test body',
-      requiresTypeChecking: true
+      description:
+        'Stellt sicher, dass jeder Vitest-Test mindestens eine Assertion enthält.',
+      requiresTypeChecking: false
     },
     schema: [
       {
@@ -50,7 +51,8 @@ export default createRule<Options, MESSAGE_ID>({
       },
     ],
     messages: {
-      noAssertions: 'Test has no assertions',
+      noAssertions:
+        "In jedem Testcase muss mindestens EIN 'expect' Aufruf erfolgen. Ansonsten erfüllt der Test keinerlei Funktion und wird als positiv von Vitest bewertet.",
     },
   },
   create(

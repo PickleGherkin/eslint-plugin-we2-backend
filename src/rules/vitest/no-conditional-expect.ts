@@ -25,12 +25,13 @@ export default createRule<Options, MESSAGE_ID>({
   meta: {
     type: 'problem',
     docs: {
-      description: 'disallow conditional expects',
+      description:
+        'Verhindert expect-Aufrufe innerhalb bedingter Ausdrücke oder eines catch-Blocks.',
       requiresTypeChecking: false,
     },
     messages: {
       noConditionalExpect:
-        'Avoid calling `expect` inside conditional statements',
+        'Vermeide es `expect` in Konditionen zu verwenden. Versuche `expects` so aufzustellen, dass sie von oben nach unten ohne Abzweigungen verlaufen. Schau dir zur Hilfe die Beispiel in der Regeldokumentation an.`',
     },
     schema: [
       {

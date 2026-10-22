@@ -28,15 +28,16 @@ export default createRule<Options, MESSAGE_ID>({
   meta: {
     type: 'problem',
     docs: {
-      description: 'disallow identical titles',
+      description:
+        'Verhindert identische Titel in derselben Vitest-Test- oder Describe-Ebene.',
     },
     fixable: 'code',
     schema: [],
     messages: {
       multipleTestTitle:
-        'Test is used multiple times in the same describe(suite) block',
+        'Bitte benenne deine Tests nicht gleich. Im schlimmsten Fall kann es vorkommen, dass Vitest gleich benannte Tests nicht unterscheiden kann und unberechenbare Fehler entstehen können.',
       multipleDescribeTitle:
-        'Describe is used multiple times in the same describe(suite) block',
+        'Bitte benenne deine Tests nicht gleich. Im schlimmsten Fall kann es vorkommen, dass Vitest gleich benannte Tests nicht unterscheiden kann und unberechenbare Fehler entstehen können.',
     },
   },
   create(context) {

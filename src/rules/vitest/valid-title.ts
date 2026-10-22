@@ -124,17 +124,24 @@ export default createRule<Options, MESSAGE_IDS>({
   name: RULE_NAME,
   meta: {
     docs: {
-      description: 'enforce valid titles',
+      description:
+        'Stellt sicher, dass Titel von describe, test und it aussagekräftig und gültig sind.',
     },
     messages: {
       titleMustBeString:
-        'Test title must be a string, a function or class name',
-      emptyTitle: '{{ functionName }} should not have an empty title',
-      duplicatePrefix: 'should not have duplicate prefix',
-      accidentalSpace: 'should not have leading or trailing spaces',
-      disallowedWord: '"{{ word }}" is not allowed in test title',
-      mustNotMatch: '{{ functionName }} should not match {{ pattern }}',
-      mustMatch: '{{ functionName }} should match {{ pattern }}',
+        'Der Titel muss eine Zeichenkette sein, damit Vitest ihn in den Testergebnissen anzeigen kann.',
+      emptyTitle:
+        '{{ functionName }} benötigt einen aussagekräftigen, nicht leeren Titel.',
+      duplicatePrefix:
+        'Der Titel enthält ein doppeltes Präfix. Vermeide es `test`, `it` oder `describe` im Titel anzugeben.',
+      accidentalSpace:
+        'Der Titel darf nicht mit Leerzeichen beginnen oder enden. Entferne die versehentlichen Leerzeichen.',
+      disallowedWord:
+        '"{{ word }}" ist in Testtiteln nicht erlaubt. Formuliere den Titel ohne dieses Wort.',
+      mustNotMatch:
+        'Der Titel von {{ functionName }} darf nicht auf das Muster {{ pattern }} passen. Formuliere ihn entsprechend um.',
+      mustMatch:
+        'Der Titel von {{ functionName }} muss auf das Muster {{ pattern }} passen. Passe den Titel entsprechend an.',
       mustNotMatchCustom: '{{ message }}',
       mustMatchCustom: '{{ message }}',
     },

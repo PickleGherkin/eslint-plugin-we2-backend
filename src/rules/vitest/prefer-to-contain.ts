@@ -36,10 +36,10 @@ export default createRule<Options, MESSAGE_IDS>({
   name: RULE_NAME,
   meta: {
     docs: {
-      description: 'enforce using toContain()',
+      description: 'Empfiehlt `toContain()` für die Prüfung auf enthaltene Werte.',
     },
     messages: {
-      useToContain: 'Use toContain() instead',
+      useToContain: 'Nutze lieber toContain().',
     },
     fixable: 'code',
     type: 'suggestion',

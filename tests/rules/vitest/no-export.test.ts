@@ -1,14 +1,6 @@
 import dedent from 'dedent';
-import rule from '../../../src/rules/jest/no-export';
-import { FlatCompatRuleTester as RuleTester, espreeParser } from './test-utils';
-
-const ruleTester = new RuleTester({
-  parser: espreeParser,
-  parserOptions: {
-    ecmaVersion: 2015,
-    sourceType: 'module',
-  },
-});
+import rule from '../../../src/rules/vitest/no-export';
+import { ruleTester } from '../../RuleTester';
 
 ruleTester.run('no-export', rule, {
   valid: [
@@ -23,7 +15,6 @@ ruleTester.run('no-export', rule, {
   invalid: [
     {
       code: 'export const myThing = "invalid"; test("a test", () => { expect(1).toBe(1);});',
-      parserOptions: { sourceType: 'module' },
       errors: [{ endColumn: 34, column: 1, messageId: 'unexpectedExport' }],
     },
     {
@@ -34,7 +25,6 @@ ruleTester.run('no-export', rule, {
           expect(1).toBe(1);
         });
       `,
-      parserOptions: { sourceType: 'module' },
       errors: [{ endColumn: 34, column: 1, messageId: 'unexpectedExport' }],
     },
     {
@@ -45,7 +35,6 @@ ruleTester.run('no-export', rule, {
           expect(1).toBe(1);
         });
       `,
-      parserOptions: { sourceType: 'module' },
       errors: [{ endColumn: 34, column: 1, messageId: 'unexpectedExport' }],
     },
     {
@@ -56,18 +45,14 @@ ruleTester.run('no-export', rule, {
           expect(1).toBe(1);
         });
       `,
-      parserOptions: { sourceType: 'module' },
       errors: [{ endColumn: 34, column: 1, messageId: 'unexpectedExport' }],
     },
     {
       code: 'export default function() {};  test("a test", () => { expect(1).toBe(1);});',
-      parserOptions: { sourceType: 'module' },
       errors: [{ endColumn: 29, column: 1, messageId: 'unexpectedExport' }],
     },
     {
       code: 'export = function() {}; test("a test", () => { expect(1).toBe(1);});',
-      parser: require.resolve('@typescript-eslint/parser'),
-      parserOptions: { sourceType: 'module' },
       errors: [{ endColumn: 24, column: 1, messageId: 'unexpectedExport' }],
     },
     {

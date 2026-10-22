@@ -157,17 +157,24 @@ export default createRule<
   name: RULE_NAME,
   meta: {
     docs: {
-      description: 'enforce valid `expect()` usage',
+      description:
+        'Stellt sicher, dass `expect()` mit einem gültigen Argument und einem aufgerufenen Matcher verwendet wird.',
     },
     messages: {
-      tooManyArgs: 'Expect takes at most {{ amount}} argument{{ s }}',
-      notEnoughArgs: 'Expect requires at least {{ amount }} argument{{ s }}',
-      modifierUnknown: 'Expect has an unknown modifier',
-      matcherNotFound: 'Expect must have a corresponding matcher call',
-      matcherNotCalled: 'Matchers must be called to assert',
-      asyncMustBeAwaited: 'Async assertions must be awaited{{ orReturned }}',
+      tooManyArgs:
+        '`expect()` darf höchstens {{ amount }} Argument{{ s }} erhalten. Entferne die überzähligen Argumente.',
+      notEnoughArgs:
+        '`expect()` benötigt mindestens {{ amount }} Argument{{ s }}. Übergib den Wert, der geprüft werden soll.',
+      modifierUnknown:
+        'Dieser Modifier ist für `expect()` nicht bekannt. Verwende nur unterstützte Modifier wie `not`, `resolves` oder `rejects`.',
+      matcherNotFound:
+        'Auf `expect()` muss ein Matcher folgen, zum Beispiel `.toBe()` oder `.toEqual()`.',
+      matcherNotCalled:
+        'Der Matcher muss aufgerufen werden, damit die Assertion ausgeführt wird. Ergänze Klammern, zum Beispiel `.toBe(value)`.',
+      asyncMustBeAwaited:
+        'Diese asynchrone Assertion muss mit `await` abgewartet{{ orReturned }} werden, damit Vitest auf ihr Ergebnis wartet.',
       promisesWithAsyncAssertionsMustBeAwaited:
-        'Promises which return async assertions must be awaited{{ orReturned }}',
+        'Diese Promise-Kette enthält eine asynchrone Assertion und muss mit `await` abgewartet{{ orReturned }} werden, damit die Assertion sicher ausgeführt wird.',
     },
     type: 'suggestion',
     fixable: 'code',

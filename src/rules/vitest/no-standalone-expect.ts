@@ -56,11 +56,11 @@ export default createRule<Options, MESSAGE_IDS>({
   name: RULE_NAME,
   meta: {
     docs: {
-      description: 'disallow using `expect` outside of `it` or `test` blocks',
+      description: 'Verhindert `expect` außerhalb eines Vitest-Testblocks.',
     },
     type: 'suggestion',
     messages: {
-      noStandaloneExpect: 'Expect must be called inside a test block',
+      noStandaloneExpect: 'Expect muss innerhalb eines `test`-Blocks sein.',
     },
     schema: [
       {

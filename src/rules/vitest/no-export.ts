@@ -1,15 +1,16 @@
-import { AST_NODE_TYPES, type TSESTree } from '@typescript-eslint/utils';
-import { isTypeOfJestFnCall } from '../utils';
-import { createRule } from '../utils/createRule';
+import { AST_NODE_TYPES, type TSESTree } from '@typescript-eslint/utils'
+import { createRule } from '../utils/createRule'
+import { isTypeOfVitestFnCall } from '../utils/parse-vitest-fn-call'
 
 export default createRule({
   name: 'no-export',
   meta: {
     docs: {
-      description: 'Verhindert Exporte aus Dateien, die Jest-Tests enthalten.',
+      description: 'Verhindert Exporte aus Dateien, die Vitest-Tests enthalten.',
     },
     messages: {
-      unexpectedExport: "Bitte exportiere keine Funktionen oder Variablen aus deinen Testdateien. Das Problem ist, dass beim Importieren von Testdateien die Tests erneut von Jest registriert werden und dadurch inkonsistente Ergebnisse entstehen können. Wenn du Helfer-Funktionen innerhalb deiner Testdateien verwenden möchtest, solltest du diese in eine eigenständige TS-Dateien implementieren, wie bspw. 'userHelper.ts'."
+      unexpectedExport:
+        "Bitte exportiere keine Funktionen oder Variablen aus deinen Testdateien. Das Problem ist, dass beim Importieren von Testdateien die Tests erneut von Vitest registriert werden und dadurch inkonsistente Ergebnisse entstehen können. Wenn du Helfer-Funktionen innerhalb deiner Testdateien verwenden möchtest, solltest du diese in eine eigenständige TS-Datei implementieren, wie bspw. 'userHelper.ts'.",
     },
     type: 'suggestion',
     schema: [],
@@ -21,21 +22,21 @@ export default createRule({
       | TSESTree.ExportDefaultDeclaration
       | TSESTree.TSExportAssignment
       | TSESTree.MemberExpression
-    > = [];
-    let hasTestCase = false;
+    > = []
+    let hasTestCase = false
 
     return {
       'Program:exit'() {
         if (hasTestCase && exportNodes.length > 0) {
           for (const node of exportNodes) {
-            context.report({ node, messageId: 'unexpectedExport' });
+            context.report({ node, messageId: 'unexpectedExport' })
           }
         }
       },
 
       CallExpression(node) {
-        if (isTypeOfJestFnCall(node, context, ['test'])) {
-          hasTestCase = true;
+        if (isTypeOfVitestFnCall(node, context, ['test'])) {
+          hasTestCase = true
         }
       },
       'ExportNamedDeclaration, ExportDefaultDeclaration, TSExportAssignment'(
@@ -44,15 +45,15 @@ export default createRule({
           | TSESTree.ExportDefaultDeclaration
           | TSESTree.TSExportAssignment,
       ) {
-        exportNodes.push(node);
+        exportNodes.push(node)
       },
       'AssignmentExpression > MemberExpression'(
         node: TSESTree.MemberExpression,
       ) {
-        let { object, property } = node;
+        let { object, property } = node
 
         if (object.type === AST_NODE_TYPES.MemberExpression) {
-          ({ object, property } = object);
+          ({ object, property } = object)
         }
 
         if (
@@ -61,9 +62,9 @@ export default createRule({
           property.type === AST_NODE_TYPES.Identifier &&
           /^exports?$/u.test(property.name)
         ) {
-          exportNodes.push(node);
+          exportNodes.push(node)
         }
       },
-    };
+    }
   },
-});
+})

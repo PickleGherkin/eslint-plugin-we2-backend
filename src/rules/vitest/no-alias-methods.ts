@@ -13,12 +13,13 @@ export default createRule<Options, MESSAGE_ID>({
   name: RULE_NAME,
   meta: {
     docs: {
-      description: 'disallow alias methods',
+      description:
+        'Verlangt die kanonischen Namen für Vitest-Matcher anstelle ihrer Alias-Methoden.',
       requiresTypeChecking: false,
     },
     messages: {
       noAliasMethods:
-        'Replace {{ alias }}() with its canonical name {{ canonical }}()',
+        `Verwende statt '{{ alias }}()' lieber die kanonische Methode '{{ canonical }}()'. Dadurch halten sich die Tests nach aktuellen Anweisungen der Vitest-Dokumentationen und lassen sich besser nachvollziehen.`,
     },
     type: 'suggestion',
     fixable: 'code',
