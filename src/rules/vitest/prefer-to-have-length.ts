@@ -1,0 +1,71 @@
+import { AST_NODE_TYPES } from '@typescript-eslint/utils'
+import {
+  getAccessorValue,
+  isSupportedAccessor,
+} from '../utils'
+import { parseVitestFnCall } from '../utils/parse-vitest-fn-call'
+import { EqualityMatcher } from '../utils/types'
+import { createRule } from '../utils/createRule'
+
+export type MESSAGE_IDS = 'preferToHaveLength'
+const RULE_NAME = 'prefer-to-have-length'
+type Options = []
+
+export default createRule<Options, MESSAGE_IDS>({
+  name: RULE_NAME,
+  meta: {
+    type: 'suggestion',
+    docs: {
+      description: 'enforce using toHaveLength()',
+    },
+    fixable: 'code',
+    messages: {
+      preferToHaveLength: 'Prefer toHaveLength()',
+    },
+    schema: [],
+  },
+  create(context) {
+    return {
+      CallExpression(node) {
+        const vitestFnCall = parseVitestFnCall(node, context)
+
+        if (vitestFnCall?.type !== 'expect') return
+
+        const { parent: expect } = vitestFnCall.head.node
+
+        if (expect?.type !== AST_NODE_TYPES.CallExpression) return
+
+        const [argument] = expect.arguments
+        const { matcher } = vitestFnCall
+
+        if (
+          !Object.prototype.hasOwnProperty.call(
+            EqualityMatcher,
+            getAccessorValue(matcher),
+          ) ||
+          argument?.type !== AST_NODE_TYPES.MemberExpression ||
+          !isSupportedAccessor(argument.property, 'length')
+        )
+          return
+
+        context.report({
+          node: matcher,
+          messageId: 'preferToHaveLength',
+          fix(fixer) {
+            return [
+              fixer.removeRange([
+                argument.property.range[0] - 1,
+                argument.range[1],
+              ]),
+
+              fixer.replaceTextRange(
+                [matcher.parent.object.range[1], matcher.parent.range[1]],
+                '.toHaveLength',
+              ),
+            ]
+          },
+        })
+      },
+    }
+  },
+})

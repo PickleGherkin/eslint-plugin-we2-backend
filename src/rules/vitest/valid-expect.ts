@@ -1,0 +1,470 @@
+import { AST_NODE_TYPES, TSESLint, TSESTree } from '@typescript-eslint/utils'
+import {
+  FunctionExpression,
+  getAccessorValue,
+  isFunction,
+  isSupportedAccessor,
+} from '../utils'
+import { parseVitestFnCallWithReason } from '../utils/parse-vitest-fn-call'
+import { ModifierName } from '../utils/types'
+import { parsePluginSettings } from '../utils/parse-plugin-settings'
+import { createRule } from '../utils/createRule'
+
+const RULE_NAME = 'valid-expect'
+export type MESSAGE_IDS =
+  | 'tooManyArgs'
+  | 'notEnoughArgs'
+  | 'modifierUnknown'
+  | 'matcherNotFound'
+  | 'matcherNotCalled'
+  | 'asyncMustBeAwaited'
+  | 'promisesWithAsyncAssertionsMustBeAwaited'
+
+const defaultAsyncMatchers = ['toReject', 'toResolve']
+
+/**
+ * Async assertions might be called in Promise
+ * methods like `Promise.x(expect1)` or `Promise.x([expect1, expect2])`.
+ * If that's the case, Promise node have to be awaited or returned.
+ *
+ * @Returns CallExpressionNode
+ */
+const getPromiseCallExpressionNode = (node: TSESTree.Node) => {
+  if (
+    node.type === AST_NODE_TYPES.ArrayExpression &&
+    node.parent.type === AST_NODE_TYPES.CallExpression
+  )
+    node = node.parent
+
+  if (
+    node.type === AST_NODE_TYPES.CallExpression &&
+    node.callee.type === AST_NODE_TYPES.MemberExpression &&
+    isSupportedAccessor(node.callee.object, 'Promise')
+  )
+    return node
+
+  return null
+}
+
+const promiseArrayExceptionKey = ({ start, end }: TSESTree.SourceLocation) =>
+  `${start.line}:${start.column}-${end.line}:${end.column}`
+
+const getNormalizeFunctionExpression = (
+  functionExpression: FunctionExpression,
+):
+  | TSESTree.PropertyComputedName
+  | TSESTree.PropertyNonComputedName
+  | FunctionExpression => {
+  if (
+    functionExpression.parent.type === AST_NODE_TYPES.Property &&
+    functionExpression.type === AST_NODE_TYPES.FunctionExpression
+  )
+    return functionExpression.parent
+
+  return functionExpression
+}
+
+const promiseChainMethods = new Set(['catch', 'finally', 'then'])
+
+const findTopMostMatcherCallExpression = (
+  node: TSESTree.CallExpression,
+): TSESTree.CallExpression => {
+  let currentNode: TSESTree.Node = node
+  let topMostMatcherCallExpression = node
+
+  while (
+    currentNode.parent?.type === AST_NODE_TYPES.MemberExpression &&
+    currentNode.parent.object === currentNode &&
+    isSupportedAccessor(currentNode.parent.property)
+  ) {
+    if (promiseChainMethods.has(getAccessorValue(currentNode.parent.property)))
+      break
+
+    currentNode = currentNode.parent
+
+    if (
+      currentNode.parent?.type === AST_NODE_TYPES.CallExpression &&
+      currentNode.parent.callee === currentNode
+    ) {
+      topMostMatcherCallExpression = currentNode.parent
+      currentNode = currentNode.parent
+    }
+  }
+
+  return topMostMatcherCallExpression
+}
+
+function getParentIfThenified(node: TSESTree.Node): TSESTree.Node {
+  const grandParentNode = node.parent?.parent
+
+  if (
+    grandParentNode?.type === AST_NODE_TYPES.CallExpression &&
+    grandParentNode.callee.type === AST_NODE_TYPES.MemberExpression &&
+    isSupportedAccessor(grandParentNode.callee.property) &&
+    promiseChainMethods.has(getAccessorValue(grandParentNode.callee.property))
+  )
+    return getParentIfThenified(grandParentNode)
+
+  return node
+}
+
+const findPromiseCallExpressionNode = (node: TSESTree.Node) =>
+  node.parent?.parent &&
+  [AST_NODE_TYPES.CallExpression, AST_NODE_TYPES.ArrayExpression].includes(
+    node.parent.type,
+  )
+    ? getPromiseCallExpressionNode(node.parent)
+    : null
+
+const findFirstFunctionExpression = ({
+  parent,
+}: TSESTree.Node): FunctionExpression | null => {
+  if (!parent) return null
+
+  return isFunction(parent) ? parent : findFirstFunctionExpression(parent)
+}
+
+const isAcceptableReturnNode = (
+  node: TSESTree.Node,
+  allowReturn: boolean,
+): node is
+  | TSESTree.ConditionalExpression
+  | TSESTree.ArrowFunctionExpression
+  | TSESTree.AwaitExpression
+  | TSESTree.ReturnStatement => {
+  if (allowReturn && node.type === AST_NODE_TYPES.ReturnStatement) return true
+
+  if (node.type === AST_NODE_TYPES.ConditionalExpression)
+    return isAcceptableReturnNode(node.parent, allowReturn)
+
+  return [
+    AST_NODE_TYPES.ArrowFunctionExpression,
+    AST_NODE_TYPES.AwaitExpression,
+  ].includes(node.type)
+}
+
+export default createRule<
+  [
+    Partial<{
+      alwaysAwait: boolean
+      asyncMatchers: string[]
+      minArgs: number
+      maxArgs: number
+    }>,
+  ],
+  MESSAGE_IDS
+>({
+  name: RULE_NAME,
+  meta: {
+    docs: {
+      description: 'enforce valid `expect()` usage',
+    },
+    messages: {
+      tooManyArgs: 'Expect takes at most {{ amount}} argument{{ s }}',
+      notEnoughArgs: 'Expect requires at least {{ amount }} argument{{ s }}',
+      modifierUnknown: 'Expect has an unknown modifier',
+      matcherNotFound: 'Expect must have a corresponding matcher call',
+      matcherNotCalled: 'Matchers must be called to assert',
+      asyncMustBeAwaited: 'Async assertions must be awaited{{ orReturned }}',
+      promisesWithAsyncAssertionsMustBeAwaited:
+        'Promises which return async assertions must be awaited{{ orReturned }}',
+    },
+    type: 'suggestion',
+    fixable: 'code',
+    schema: [
+      {
+        type: 'object',
+        properties: {
+          alwaysAwait: {
+            description: 'Require awaiting every async assertion.',
+            type: 'boolean',
+          },
+          asyncMatchers: {
+            description: 'Matchers that should be considered async assertions.',
+            type: 'array',
+            items: { type: 'string' },
+          },
+          minArgs: {
+            description: 'Minimum number of arguments allowed for `expect`.',
+            type: 'number',
+            minimum: 1,
+          },
+          maxArgs: {
+            description: 'Maximum number of arguments allowed for `expect`.',
+            type: 'number',
+            minimum: 1,
+          },
+        },
+        additionalProperties: false,
+      },
+    ],
+    defaultOptions: [
+      {
+        alwaysAwait: false,
+        asyncMatchers: defaultAsyncMatchers,
+        minArgs: 1,
+        maxArgs: 1,
+      },
+    ],
+  },
+  create: (
+    context,
+    [
+      {
+        alwaysAwait,
+        asyncMatchers = defaultAsyncMatchers,
+        minArgs = 1,
+        maxArgs = 1,
+      },
+    ],
+  ) => {
+    const arrayExceptions = new Set<string>()
+    const descriptors: Array<{
+      node: TSESTree.Node
+      messageId: Extract<
+        MESSAGE_IDS,
+        'asyncMustBeAwaited' | 'promisesWithAsyncAssertionsMustBeAwaited'
+      >
+    }> = []
+
+    const pushPromiseArrayException = (loc: TSESTree.SourceLocation) =>
+      arrayExceptions.add(promiseArrayExceptionKey(loc))
+
+    /**
+     * Promise method that accepts an array of promises,
+     * (eg. Promise.all), will throw warnings for the each
+     * unawaited or non-returned promise. To avoid throwing
+     * multiple warnings, we check if there is a warning in
+     * the given location.
+     */
+    const promiseArrayExceptionExists = (loc: TSESTree.SourceLocation) =>
+      arrayExceptions.has(promiseArrayExceptionKey(loc))
+
+    const findTopMostMemberExpression = (
+      node: TSESTree.MemberExpression,
+    ): TSESTree.MemberExpression => {
+      let topMostMemberExpression = node
+      let { parent } = node
+
+      while (parent) {
+        if (parent.type !== AST_NODE_TYPES.MemberExpression) break
+
+        topMostMemberExpression = parent
+        parent = parent.parent
+      }
+      return topMostMemberExpression
+    }
+
+    return {
+      CallExpression(node) {
+        const vitestFnCall = parseVitestFnCallWithReason(node, context)
+        const settings = parsePluginSettings(context.settings)
+
+        if (typeof vitestFnCall === 'string') {
+          const reportingNode =
+            node.parent.type === AST_NODE_TYPES.MemberExpression
+              ? findTopMostMemberExpression(node.parent).property
+              : node
+
+          if (vitestFnCall === 'matcher-not-found') {
+            context.report({
+              messageId: 'matcherNotFound',
+              node: reportingNode,
+            })
+
+            return
+          }
+
+          if (vitestFnCall === 'matcher-not-called') {
+            context.report({
+              messageId:
+                isSupportedAccessor(reportingNode) &&
+                Object.prototype.hasOwnProperty.call(
+                  ModifierName,
+                  getAccessorValue(reportingNode),
+                )
+                  ? 'matcherNotFound'
+                  : 'matcherNotCalled',
+              node: reportingNode,
+            })
+          }
+
+          if (vitestFnCall === 'modifier-unknown') {
+            context.report({
+              messageId: 'modifierUnknown',
+              node: reportingNode,
+            })
+            return
+          }
+          return
+        } else if (
+          vitestFnCall?.type === 'expectTypeOf' &&
+          settings.typecheck
+        ) {
+          return
+        } else if (vitestFnCall?.type !== 'expect') {
+          return
+        }
+
+        const expect = vitestFnCall.expectCall
+
+        if (!expect) return
+
+        if (expect.arguments.length < minArgs) {
+          const expectLength =
+            expect.callee.loc.end.column - expect.loc.start.column
+
+          const loc: TSESTree.SourceLocation = {
+            start: {
+              column: expect.loc.start.column + expectLength,
+              line: expect.loc.start.line,
+            },
+            end: {
+              column: expect.loc.start.column + expectLength + 1,
+              line: expect.loc.start.line,
+            },
+          }
+
+          context.report({
+            messageId: 'notEnoughArgs',
+            data: { amount: minArgs, s: minArgs === 1 ? '' : 's' },
+            node: expect,
+            loc,
+          })
+        }
+
+        if (expect.arguments.length > maxArgs) {
+          // if expect(value, "message") and expect(value, `${message}`), it is valid usage
+          // Note: 2nd argument should be string, not a variable in current implementation
+          if (expect.arguments.length === 2) {
+            //  expect(value, "string literal")
+            const isSecondArgString =
+              expect.arguments[1].type === AST_NODE_TYPES.Literal &&
+              typeof expect.arguments[1].value === 'string'
+            // expect(value, `template literal`)
+            const isSecondArgTemplateLiteral =
+              expect.arguments[1].type === AST_NODE_TYPES.TemplateLiteral
+            // expect.poll(fn, { timeout }) and expect.element(el, { timeout })
+            // accept an options object as their second argument
+            const takesOptionsArg =
+              vitestFnCall.expectApiName === 'poll' ||
+              vitestFnCall.expectApiName === 'element'
+            if (
+              isSecondArgString ||
+              isSecondArgTemplateLiteral ||
+              takesOptionsArg
+            ) {
+              return
+            }
+          }
+
+          const { start } = expect.arguments[maxArgs].loc
+          const { end } = expect.arguments[expect.arguments.length - 1].loc
+
+          const loc = {
+            start,
+            end: {
+              column: end.column + 1,
+              line: end.line,
+            },
+          }
+
+          context.report({
+            messageId: 'tooManyArgs',
+            data: { amount: maxArgs, s: maxArgs === 1 ? '' : 's' },
+            node: expect,
+            loc,
+          })
+        }
+
+        const { matcher } = vitestFnCall
+
+        const matcherCallExpression = matcher.parent.parent
+
+        if (matcherCallExpression.type !== AST_NODE_TYPES.CallExpression) return
+
+        const parentNode = findTopMostMatcherCallExpression(
+          matcherCallExpression,
+        )
+        const shouldBeAwaited =
+          vitestFnCall.modifiers.some((modifier) => {
+            const value = getAccessorValue(modifier)
+
+            return (
+              value === ModifierName.resolves || value === ModifierName.rejects
+            )
+          }) || asyncMatchers.includes(getAccessorValue(matcher))
+
+        if (!parentNode?.parent || !shouldBeAwaited) return
+
+        const isParentArrayExpression =
+          parentNode.parent.type === AST_NODE_TYPES.ArrayExpression
+
+        const targetNode = getParentIfThenified(parentNode)
+        const finalNode =
+          findPromiseCallExpressionNode(targetNode) || targetNode
+
+        if (
+          finalNode.parent &&
+          !isAcceptableReturnNode(finalNode.parent, !alwaysAwait) &&
+          !promiseArrayExceptionExists(finalNode.loc)
+        ) {
+          descriptors.push({
+            messageId:
+              finalNode === targetNode
+                ? 'asyncMustBeAwaited'
+                : 'promisesWithAsyncAssertionsMustBeAwaited',
+            node: finalNode,
+          })
+
+          if (isParentArrayExpression) pushPromiseArrayException(finalNode.loc)
+        }
+      },
+      'Program:exit'() {
+        const fixes: TSESLint.RuleFix[] = []
+
+        descriptors.forEach(({ node, messageId }, index) => {
+          const orReturned = alwaysAwait ? '' : ' or returned'
+
+          context.report({
+            loc: node.loc,
+            data: { orReturned },
+            messageId,
+            node,
+            fix(fixer) {
+              const functionExpression = findFirstFunctionExpression(node)
+
+              if (!functionExpression) return null
+
+              const foundAsyncFixer = fixes.some((fix) => fix.text === 'async ')
+
+              if (!functionExpression.async && !foundAsyncFixer) {
+                const targetFunction =
+                  getNormalizeFunctionExpression(functionExpression)
+
+                fixes.push(fixer.insertTextBefore(targetFunction, 'async '))
+              }
+
+              const returnStatement =
+                node.parent?.type === AST_NODE_TYPES.ReturnStatement
+                  ? node.parent
+                  : null
+
+              if (alwaysAwait && returnStatement) {
+                const sourceCodeText =
+                  context.sourceCode.getText(returnStatement)
+                const replacedText = sourceCodeText.replace('return', 'await')
+
+                fixes.push(fixer.replaceText(returnStatement, replacedText))
+              } else {
+                fixes.push(fixer.insertTextBefore(node, 'await '))
+              }
+
+              return index === descriptors.length - 1 ? fixes : null
+            },
+          })
+        })
+      },
+    }
+  },
+})

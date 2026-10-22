@@ -1,0 +1,158 @@
+import { TSESLint, AST_NODE_TYPES, TSESTree } from '@typescript-eslint/utils'
+import {
+  getAccessorValue,
+  getNodeName,
+  isFunction,
+} from '../utils'
+import {
+  isTypeOfVitestFnCall,
+  parseVitestFnCall,
+} from '../utils/parse-vitest-fn-call'
+import { DescribeAlias } from '../utils/types'
+import { createRule } from '../utils/createRule'
+
+const RULE_NAME = 'no-standalone-expect'
+export type MESSAGE_IDS = 'noStandaloneExpect'
+type Options = {
+  additionalTestBlockFunctions?: string[]
+}[]
+
+const getBlockType = (
+  statement: TSESTree.BlockStatement,
+  context: TSESLint.RuleContext<string, unknown[]>,
+): 'function' | 'describe' | null => {
+  const func = statement.parent
+
+  if (!func)
+    throw new Error(
+      'Unexpected block statement. If you feel like this is a bug report https://github.com/veritem/eslint-plugin-vitest/issues/new',
+    )
+
+  if (func.type === AST_NODE_TYPES.FunctionDeclaration) return 'function'
+
+  if (isFunction(func) && func.parent) {
+    const expr = func.parent
+
+    if (expr.type === AST_NODE_TYPES.VariableDeclarator) return 'function'
+
+    if (
+      expr.type === AST_NODE_TYPES.CallExpression &&
+      isTypeOfVitestFnCall(expr, context, ['describe'])
+    )
+      return 'describe'
+  }
+  return null
+}
+
+type BlockType =
+  | 'test'
+  | 'function'
+  | 'describe'
+  | 'arrow'
+  | 'template'
+  | 'helper'
+
+export default createRule<Options, MESSAGE_IDS>({
+  name: RULE_NAME,
+  meta: {
+    docs: {
+      description: 'disallow using `expect` outside of `it` or `test` blocks',
+    },
+    type: 'suggestion',
+    messages: {
+      noStandaloneExpect: 'Expect must be called inside a test block',
+    },
+    schema: [
+      {
+        type: 'object',
+        properties: {
+          additionalTestBlockFunctions: {
+            description:
+              'Additional functions that should be treated as test blocks.',
+            type: 'array',
+            items: { type: 'string' },
+          },
+        },
+        additionalProperties: false,
+      },
+    ],
+    defaultOptions: [{ additionalTestBlockFunctions: [] }],
+  },
+  create(context, [{ additionalTestBlockFunctions = [] }]) {
+    const callStack: BlockType[] = []
+
+    const isCustomTestBlockFunction = (
+      node: TSESTree.CallExpression,
+    ): boolean => additionalTestBlockFunctions.includes(getNodeName(node) || '')
+
+    const isDefineHelperCall = (node: TSESTree.CallExpression): boolean => {
+      const vitestFnCall = parseVitestFnCall(node, context)
+      return (
+        vitestFnCall?.type === 'vi' &&
+        vitestFnCall.members.length === 1 &&
+        getAccessorValue(vitestFnCall.members[0]) === 'defineHelper'
+      )
+    }
+
+    return {
+      CallExpression(node) {
+        const vitestFnCall = parseVitestFnCall(node, context)
+
+        if (vitestFnCall?.type === 'expect') {
+          if (
+            vitestFnCall.head.node.parent?.type ===
+              AST_NODE_TYPES.MemberExpression &&
+            vitestFnCall.members.length === 1 &&
+            !['assertions', 'hasAssertions'].includes(
+              getAccessorValue(vitestFnCall.members[0]),
+            )
+          )
+            return
+
+          const parent = callStack[callStack.length - 1]
+
+          if (!parent || parent === DescribeAlias.describe)
+            context.report({ node, messageId: 'noStandaloneExpect' })
+
+          return
+        }
+
+        if (vitestFnCall?.type === 'test' || isCustomTestBlockFunction(node))
+          callStack.push('test')
+        if (isDefineHelperCall(node)) callStack.push('helper')
+
+        if (node.callee.type === AST_NODE_TYPES.TaggedTemplateExpression)
+          callStack.push('template')
+      },
+      'CallExpression:exit'(node: TSESTree.CallExpression) {
+        const top = callStack[callStack.length - 1]
+
+        if (
+          (top === 'test' &&
+            (isTypeOfVitestFnCall(node, context, ['test']) ||
+              isCustomTestBlockFunction(node)) &&
+            node.callee.type !== AST_NODE_TYPES.MemberExpression) ||
+          (top === 'helper' && isDefineHelperCall(node)) ||
+          (top === 'template' &&
+            node.callee.type === AST_NODE_TYPES.TaggedTemplateExpression)
+        )
+          callStack.pop()
+      },
+      BlockStatement(statement) {
+        const blockType = getBlockType(statement, context)
+        if (blockType) callStack.push(blockType)
+      },
+      'BlockStatement:exit'(statement) {
+        const blockType = getBlockType(statement, context)
+        if (blockType) callStack.pop()
+      },
+      ArrowFunctionExpression(node) {
+        if (node.parent?.type !== AST_NODE_TYPES.CallExpression)
+          callStack.push('arrow')
+      },
+      'ArrowFunctionExpression:exit'() {
+        if (callStack[callStack.length - 1] === 'arrow') callStack.pop()
+      },
+    }
+  },
+})

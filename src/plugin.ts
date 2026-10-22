@@ -14,22 +14,22 @@ const recommendedRules = {
 	'we2b/express/valid-express-endpoint': 'error',
 	'we2b/express/valid-login-router': 'error',
 	'we2b/express/no-model-dependencies': 'error',
-	'we2b/jest/await-supertest-request': 'error',
-	'we2b/jest/expect-expect': 'error',
-	'we2b/jest/no-conditional-expect': 'error',
-	'we2b/jest/no-export': 'error',
-	'we2b/jest/no-identical-title': 'error',
-	'we2b/jest/no-standalone-expect': 'error',
-	'we2b/jest/valid-expect': 'error',
-	'we2b/jest/valid-expect-in-promise': 'error',
-	'we2b/jest/valid-title': 'error',
+	'we2b/supertest/await-supertest-request': 'error',
+	'we2b/vitest/expect-expect': 'error',
+	'we2b/vitest/no-conditional-expect': 'error',
+	// 'we2b/vitest/no-export': 'error',
+	'we2b/vitest/no-identical-title': 'error',
+	'we2b/vitest/no-standalone-expect': 'error',
+	'we2b/vitest/valid-expect': 'error',
+	'we2b/vitest/valid-expect-in-promise': 'error',
+	'we2b/vitest/valid-title': 'error',
 } satisfies Record<string, TSESLint.Linter.RuleLevel>;
 
 const styleRules = {
-	'we2b/jest/prefer-to-be': 'warn',
-	'we2b/jest/prefer-to-contain': 'warn',
-	'we2b/jest/prefer-to-have-length': 'warn',
-	'we2b/jest/no-alias-methods': 'warn',
+	'we2b/vitest/prefer-to-be': 'warn',
+	'we2b/vitest/prefer-to-contain': 'warn',
+	'we2b/vitest/prefer-to-have-length': 'warn',
+	'we2b/vitest/no-alias-methods': 'warn',
 } satisfies Record<string, TSESLint.Linter.RuleLevel>;
 
 const allRules = Object.fromEntries<TSESLint.Linter.RuleLevel>(

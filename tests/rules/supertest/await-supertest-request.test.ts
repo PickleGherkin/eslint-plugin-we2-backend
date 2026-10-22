@@ -1,4 +1,4 @@
-import awaitSupertestRequest from "../../../src/rules/jest/await-supertest-request";
+import awaitSupertestRequest from "../../../src/rules/supertest/await-supertest-request";
 import { ruleTester } from "../../RuleTester";
 
 /**

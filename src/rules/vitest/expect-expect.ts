@@ -1,0 +1,145 @@
+import { AST_NODE_TYPES, TSESTree } from '@typescript-eslint/utils'
+import { getNodeName, isSupportedAccessor } from '../utils'
+import { parsePluginSettings } from '../utils/parse-plugin-settings'
+import {
+  getTestCallExpressionsFromDeclaredVariables,
+  isTypeOfVitestFnCall,
+} from '../utils/parse-vitest-fn-call'
+import { createRule } from '../utils/createRule'
+
+const RULE_NAME = 'expect-expect'
+export type MESSAGE_ID = 'noAssertions'
+type Options = [
+  {
+    assertFunctionNames: string[]
+    additionalTestBlockFunctions: string[]
+  },
+]
+
+export default createRule<Options, MESSAGE_ID>({
+  name: RULE_NAME,
+  meta: {
+    type: 'suggestion',
+    docs: {
+      description: 'enforce having expectation in test body',
+      requiresTypeChecking: true
+    },
+    schema: [
+      {
+        type: 'object',
+        properties: {
+          assertFunctionNames: {
+            description: 'List of function names treated as assertions.',
+            type: 'array',
+            items: { type: 'string' },
+          },
+          additionalTestBlockFunctions: {
+            description:
+              'Additional functions that should be treated as test blocks.',
+            type: 'array',
+            items: { type: 'string' },
+          },
+        },
+        additionalProperties: false,
+      },
+    ],
+    defaultOptions: [
+      {
+        assertFunctionNames: ['expect', 'assert'],
+        additionalTestBlockFunctions: [],
+      },
+    ],
+    messages: {
+      noAssertions: 'Test has no assertions',
+    },
+  },
+  create(
+    context,
+    [{ assertFunctionNames = ['expect'], additionalTestBlockFunctions = [] }],
+  ) {
+    const unchecked: TSESTree.CallExpression[] = []
+    const settings = parsePluginSettings(context.settings)
+
+    if (settings.typecheck)
+      assertFunctionNames.push('expectTypeOf', 'assertType')
+    const assertFunctionRegexps = assertFunctionNames.map(buildPatternRegexp)
+
+    function checkCallExpression(nodes: TSESTree.Node[]) {
+      for (const node of nodes) {
+        const index =
+          node.type === AST_NODE_TYPES.CallExpression
+            ? unchecked.indexOf(node)
+            : -1
+
+        if (node.type === AST_NODE_TYPES.FunctionDeclaration) {
+          const declaredVariables =
+            context.sourceCode.getDeclaredVariables(node)
+          const testCallExpressions =
+            getTestCallExpressionsFromDeclaredVariables(
+              declaredVariables,
+              context,
+            )
+
+          checkCallExpression(testCallExpressions)
+        }
+
+        if (index !== -1) {
+          unchecked.splice(index, 1)
+          break
+        }
+      }
+    }
+
+    return {
+      CallExpression(node) {
+        if (
+          node.callee.type === AST_NODE_TYPES.Identifier &&
+          node.callee.name === 'bench'
+        )
+          return
+
+        if (
+          node?.callee?.type === AST_NODE_TYPES.MemberExpression &&
+          node.callee.property.type === AST_NODE_TYPES.Identifier &&
+          ['skip', 'extend', 'scoped'].includes(node.callee.property.name)
+        )
+          return
+
+        const name = getNodeName(node) ?? ''
+
+        if (
+          isTypeOfVitestFnCall(node, context, ['test']) ||
+          additionalTestBlockFunctions.includes(name)
+        ) {
+          if (
+            node.callee.type === AST_NODE_TYPES.MemberExpression &&
+            isSupportedAccessor(node.callee.property, 'todo')
+          )
+            return
+
+          unchecked.push(node)
+        } else if (assertFunctionRegexps.some((p) => p.test(name))) {
+          checkCallExpression(context.sourceCode.getAncestors(node))
+        }
+      },
+      'Program:exit'() {
+        unchecked.forEach((node) => {
+          context.report({
+            node: node.callee,
+            messageId: 'noAssertions',
+          })
+        })
+      },
+    }
+  },
+})
+
+function buildPatternRegexp(pattern: string): RegExp {
+  const parts = pattern.split('.').map((x) => {
+    if (x === '**') return '[_a-z\\d\\.]*'
+
+    return x.replace(/\*/gu, '[a-z\\d]*')
+  })
+
+  return new RegExp(`^${parts.join('\\.')}(\\.|$)`, 'ui')
+}
