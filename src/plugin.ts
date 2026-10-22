@@ -20,7 +20,6 @@ const recommendedRules = {
 	'we2b/jest/no-export': 'error',
 	'we2b/jest/no-identical-title': 'error',
 	'we2b/jest/no-standalone-expect': 'error',
-	'we2b/jest/no-test-prefixes': 'error',
 	'we2b/jest/valid-expect': 'error',
 	'we2b/jest/valid-expect-in-promise': 'error',
 	'we2b/jest/valid-title': 'error',
