@@ -1,5 +1,6 @@
-import { RuleTester } from "@typescript-eslint/rule-tester";
-import { resolve } from "path";
+import { RuleTester } from '@typescript-eslint/rule-tester'
+import { dirname, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
 
 /**
  * RuleTester guidelines taken from typescript-eslint/rule-tester docs.
@@ -13,9 +14,12 @@ export const ruleTester = new RuleTester({
     languageOptions: {
         parserOptions: {
             projectService: {
-                allowDefaultProject: ["*.ts*"]
+                allowDefaultProject: ['*.ts*'],
             },
-            tsconfigRootDir: resolve(__dirname, "../"),
+            tsconfigRootDir: resolve(
+                dirname(fileURLToPath(import.meta.url)),
+                '../',
+            ),
         },
     },
-});
+})

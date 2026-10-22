@@ -4,7 +4,7 @@
         "lib": [
             "ESNext"
         ],
-        "types": ["node", "jest"],
+        "types": ["node", "vitest/globals"],
         "module": "ESNext",
         "outDir": "dist",
         "rootDir": "src",

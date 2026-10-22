@@ -17,7 +17,7 @@ const recommendedRules = {
 	'we2b/supertest/await-supertest-request': 'error',
 	'we2b/vitest/expect-expect': 'error',
 	'we2b/vitest/no-conditional-expect': 'error',
-	// 'we2b/vitest/no-export': 'error',
+	'we2b/vitest/no-export': 'error',
 	'we2b/vitest/no-identical-title': 'error',
 	'we2b/vitest/no-standalone-expect': 'error',
 	'we2b/vitest/valid-expect': 'error',
@@ -49,7 +49,7 @@ const plugin = {
 
 const createRCConfig = (rules: Record<string, TSESLint.Linter.RuleLevel>) => ({
 	plugins: [packageName],
-	env: { 'jest/globals': true },
+	env: { 'vitest/globals': true },
 	rules,
 });
 
