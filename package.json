@@ -1,6 +1,6 @@
 {
     "name": "eslint-plugin-we2-backend",
-    "version": "1.0.2",
+    "version": "1.0.4",
     "description": "An ESLint plugin tailor-made for educational purposes for students at the Berliner Hochschule für Technik.",
     "main": "dist/plugin.mjs",
     "scripts": {
