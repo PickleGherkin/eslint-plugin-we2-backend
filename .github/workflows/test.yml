@@ -26,7 +26,7 @@ jobs:
         run: npm ci
 
       - name: Run tests with coverage
-        run: npm test --ignore-scripts -- --coverage
+        run: npm test --ignore-scripts
 
       - name: Upload JUnit Report
         uses: actions/upload-artifact@v4
