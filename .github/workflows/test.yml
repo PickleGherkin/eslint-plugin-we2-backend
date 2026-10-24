@@ -25,8 +25,8 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run tests
-        run: npm test --ignore-scripts
+      - name: Run tests with coverage
+        run: npm test --ignore-scripts -- --coverage
 
       - name: Upload JUnit Report
         uses: actions/upload-artifact@v4
@@ -34,3 +34,28 @@ jobs:
         with:
           name: junit-report
           path: junit.xml
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage/
+
+      - name: Read coverage percentage
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          COVERAGE=$(jq '.total.lines.pct' coverage/coverage-summary.json)
+          echo "COVERAGE=$COVERAGE" >> $GITHUB_ENV
+
+      - name: Update coverage badge
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: schneegans/dynamic-badges-action@latest
+        with:
+          auth: ${{ secrets.GIST_TOKEN }}
+          gistID: ${{ vars.GIST_ID }}
+          filename: coverage.json
+          label: Coverage
+          message: ${{ env.COVERAGE }}%
+          valColorRange: ${{ env.COVERAGE }}
+          minColorRange: 50
+          maxColorRange: 90

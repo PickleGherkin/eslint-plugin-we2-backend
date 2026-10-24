@@ -1,6 +1,7 @@
 # ESLint Plugin WE2 Backend
 
 [![Pipeline Status](https://github.com/PickleGherkin/eslint-plugin-we2-backend/actions/workflows/test.yml/badge.svg)](https://github.com/PickleGherkin/eslint-plugin-we2-backend/actions/workflows/test.yml)
+![coverage](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/PickleGherkin/91cbf8d5665c612326cdd88b904ed4f1/raw/coverage.json)
 
 An ESLint plugin tailor-made for educational purposes for students at the Berliner Hochschule für Technik.
 
