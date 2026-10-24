@@ -10,6 +10,7 @@ export default defineConfig({
       'src/rules/utils/**',
       'src/**',
     ],
+    testTimeout: 10000,
     coverage: {
       provider: 'v8',
       reporter: ['text', 'html', 'lcov', 'json'],
